@@ -1,23 +1,30 @@
 pipeline {
-
-    agent {
-        docker {
-            image 'node'
-            args '-u root'
-        }
-    }
+    agent any
 
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                echo 'Building...'
-                sh 'npm install'
+                git branch: 'main', url: 'https://github.com/MobTesthw/WebPy.git'
             }
         }
-        stage('Test') {
+
+        stage('Empty Stage') {
             steps {
-                echo 'Testing...'
-                sh 'npm test'
+                echo 'This is a placeholder for future tests.'
+            }
+        }
+
+        stage('Deploy to Docker on Ubuntu') {
+            steps {
+                sshagent(['deploy-key']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
+                        docker pull MobTesthw/webpyapp:web;
+                        docker pull MobTesthw/webpyapp:python-script;
+                        docker-compose down;
+                        docker-compose up -d"
+                    '''
+                }
             }
         }
     }
