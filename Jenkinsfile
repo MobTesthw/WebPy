@@ -23,9 +23,7 @@ pipeline {
                 //sh 'hostnamectl' // Вывод информации о хосте
 				
 				copyArtifacts from: 'Build', filter: '**/*', target: 'target-dir'
-                sh 'ssh user@192.168.43.22 "
-					mkdir -p ~/Server-Deployment/WebPy/;
-					cp -r target-dir/* ~/Server-Deployment/WebPy/"'
+                sh 'ssh user@192.168.43.22 "mkdir -p ~/Server-Deployment/WebPy/; cp -r target-dir/* ~/Server-Deployment/WebPy/"'
                 
                 sshagent(['deploy-key']) {
                     sh '''
