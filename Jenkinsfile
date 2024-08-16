@@ -16,18 +16,19 @@ pipeline {
 
         stage('Deploy to Docker on Ubuntu') {
             steps {
+				echo "Startin deployyyyy"
 				ls
 				hostnamectl
                 sshagent(['deploy-key']) {
-					//echo on root
-					ls
+					
+					//ls
                     sh '''
                         ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
 						ls
-						#docker pull webpyflask_web:latest;
-						#docker pull webpyflask_python-script:latest;
-                        #docker-compose down;
-                        #docker-compose up -d"
+						//docker pull webpyflask_web:latest;
+						//docker pull webpyflask_python-script:latest;
+                        //docker-compose down;
+                        //docker-compose up -d"
                     '''
                 }
             }
