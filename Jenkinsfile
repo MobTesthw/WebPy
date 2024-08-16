@@ -19,7 +19,7 @@ pipeline {
 			steps {
                 echo "Starting deployment"
                 sh 'ls' // Вывод содержимого текущей директории
-                sh 'hostnamectl' // Вывод информации о хосте
+                //sh 'hostnamectl' // Вывод информации о хосте
                 
                 sshagent(['deploy-key']) {
                     sh '''
