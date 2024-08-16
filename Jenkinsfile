@@ -22,21 +22,23 @@ pipeline {
                 sh 'ls' // Вывод содержимого текущей директории
                 //sh 'hostnamectl' // Вывод информации о хосте
 				
-				copyArtifacts from: 'Build', filter: '**/*', target: 'target-dir'
-                sh 'ssh user@192.168.43.22 "mkdir -p ~/Server-Deployment/WebPy/; cp -r target-dir/* ~/Server-Deployment/WebPy/"'
+				//Delete previos vesrsion and create space for new
+				ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
+					rm -rf ~/Server-Deployment/WebPy/_Current
+					mkdir  ~/Server-Deployment/WebPy/_Current
+				"
                 
                 sshagent(['deploy-key']) {
                     sh '''
+						#Copy all the files from GitHub to Deployment server:
+						scp -r -o StrictHostKeyChecking=no * user@192.168.43.22:~/Server-Deployment/WebPy/
+						
                         ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
                             # Вывод списка файлов и директорий
                             ls
                             docker images
 							docker ps
-                            ## Команды для управления Docker
-                            #docker pull webpyflask_web:latest
-                            #docker pull webpyflask_python-script:latest
-                            #docker-compose down
-                            #docker-compose up -d
+                            docker-compose up -d
                         "
                     '''
                 }
