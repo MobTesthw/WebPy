@@ -26,12 +26,13 @@ pipeline {
                         ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
                             # Вывод списка файлов и директорий
                             ls
-                            
-                            # Команды для управления Docker
-                            docker pull webpyflask_web:latest
-                            docker pull webpyflask_python-script:latest
-                            docker-compose down
-                            docker-compose up -d
+                            docker images
+							docker ps
+                            ## Команды для управления Docker
+                            #docker pull webpyflask_web:latest
+                            #docker pull webpyflask_python-script:latest
+                            #docker-compose down
+                            #docker-compose up -d
                         "
                     '''
                 }
