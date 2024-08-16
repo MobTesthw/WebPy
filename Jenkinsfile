@@ -19,8 +19,8 @@ pipeline {
                 sshagent(['deploy-key']) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
-                        docker pull MobTesthw/webpyapp:web;
-                        docker pull MobTesthw/webpyapp:python-script;
+						docker pull webpyflask_web:latest;
+						docker pull webpyflask_python-script:latest;
                         docker-compose down;
                         docker-compose up -d"
                     '''
