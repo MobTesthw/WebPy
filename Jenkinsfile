@@ -15,23 +15,29 @@ pipeline {
         }
 
         stage('Deploy to Docker on Ubuntu') {
-            steps {
-				echo "Startin deployyyyy"
-				ls
-				hostnamectl
+
+			steps {
+                echo "Starting deployment"
+                sh 'ls' // Вывод содержимого текущей директории
+                sh 'hostnamectl' // Вывод информации о хосте
+                
                 sshagent(['deploy-key']) {
-					
-					//ls
                     sh '''
                         ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
-						ls
-						//docker pull webpyflask_web:latest;
-						//docker pull webpyflask_python-script:latest;
-                        //docker-compose down;
-                        //docker-compose up -d"
+                            # Вывод списка файлов и директорий
+                            ls
+                            
+                            # Команды для управления Docker
+                            docker pull webpyflask_web:latest
+                            docker pull webpyflask_python-script:latest
+                            docker-compose down
+                            docker-compose up -d
+                        "
                     '''
                 }
-            }
+
+
+			}
         }
     }
 }
