@@ -15,39 +15,36 @@ pipeline {
         }
 
         stage('Deploy to Docker on Ubuntu') {
-
-
-			steps {
+            steps {
                 echo "Starting deployment"
-                sh 'ls' // Вывод содержимого текущей директории
-                //sh 'hostnamectl' // Вывод информации о хосте
-				
-				//Delete previos vesrsion and create space for new
-				ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
-					rm -rf ~/Server-Deployment/WebPy/_Current
-					mkdir  ~/Server-Deployment/WebPy/_Current
-				"
-                
+                sh 'ls' // List the contents of the current directory
+                // sh 'hostnamectl' // Display host information (commented out)
+
                 sshagent(['deploy-key']) {
                     sh '''
-						#Copy all the files from GitHub to Deployment server:
-						scp -r -o StrictHostKeyChecking=no * user@192.168.43.22:~/Server-Deployment/WebPy/
-						
                         ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
-                            # Вывод списка файлов и директорий
-                            ls
+                            # Remove previous version and create space for new
+                            rm -rf ~/Server-Deployment/WebPy/_Current
+                            mkdir -p ~/Server-Deployment/WebPy/_Current
+                        "
+
+                        # Copy all files from the current workspace to the Deployment server
+                        scp -r -o StrictHostKeyChecking=no * user@192.168.43.22:~/Server-Deployment/WebPy/_Current/
+
+                        ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
+                            # List files and directories
+                            ls ~/Server-Deployment/WebPy/_Current
+                            
+                            # Pull Docker images, if necessary
                             docker images
-							docker ps
+                            
+                            # Run Docker Compose
+                            cd ~/Server-Deployment/WebPy/_Current
                             docker-compose up -d
                         "
                     '''
                 }
-				
-				
-				
-
-
-			}
+            }
         }
     }
 }
