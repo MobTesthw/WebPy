@@ -19,7 +19,7 @@ pipeline {
 				ls
 				hostnamectl
                 sshagent(['deploy-key']) {
-					#echo on root
+					//echo on root
 					ls
                     sh '''
                         ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
