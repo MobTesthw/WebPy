@@ -67,7 +67,7 @@ pipeline {
         stage('Build and Deploy New Containers') {
             steps {
                 script {
-                    sh "docker-compose -p \"${PROJECT_NAME}\" up --build -d"
+                    //sh "docker-compose -p \"${PROJECT_NAME}\" up --build -d"
                 }
             }
         }
@@ -75,7 +75,7 @@ pipeline {
     
     post {
         always {
-            sh "docker system prune -f"
+            //sh "docker system prune -f"
         }
     }
 }
