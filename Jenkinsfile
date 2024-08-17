@@ -30,7 +30,7 @@ pipeline {
 
                         # Copy all files from the current workspace to the Deployment server
                         scp -r -o StrictHostKeyChecking=no * user@192.168.43.22:~/Server-Deployment/WebPy/_Current/
-						echo "*************** Printout"
+						echo "*************** Printout**********"
 						cat ./web/templates/index.html
 
                         ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
