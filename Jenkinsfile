@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
 
-                    sshagent(['deploy-key-id']) {
+                    sshagent(['Server-Deploy-ID']) {
                         sh '''
                             ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
                                 echo '*** Remove previous version and create folder for new code ***'
