@@ -17,8 +17,8 @@ pipeline {
             steps {
                 script {
                     echo '*** Stop running containers related to the project ***'
-                    sh "docker-compose -p \"${PROJECT_NAME}\" down --rmi all"
-                    sh "docker image prune -f"
+                    //sh "docker-compose -p \"${PROJECT_NAME}\" down --rmi all"
+                    //sh "docker image prune -f"
                 }
             }
         }
