@@ -1,52 +1,45 @@
 pipeline {
     agent any
-
+    
+    environment {
+        // Присваиваем имя вашему проекту
+        PROJECT_NAME = "my_project"
+    }
+    
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/MobTesthw/WebPy.git'
+                // Получаем последний код из репозитория
+                git 'https://your-repo-url.git'
             }
         }
-
-        stage('Empty Stage') {
+        
+        stage('Stop and Remove Old Containers and Images') {
             steps {
-                echo 'This is a placeholder for future tests.'
-            }
-        }
-
-        stage('Deploy to Docker on Ubuntu') {
-            steps {
-                echo "Starting deployment"
-                sh 'ls' // List the contents of the current directory
-                // sh 'hostnamectl' // Display host information (commented out)
-
-                sshagent(['deploy-key']) {
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
-                            # Remove previous version and create space for new
-                            rm -rf ~/Server-Deployment/WebPy/_Current
-                            mkdir -p ~/Server-Deployment/WebPy/_Current
-                        "
-
-                        # Copy all files from the current workspace to the Deployment server
-                        scp -r -o StrictHostKeyChecking=no * user@192.168.43.22:~/Server-Deployment/WebPy/_Current/
-						echo "*************** Printout**********"
-						cat ./web/templates/index.html
-
-                        ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
-                            # List files and directories
-                            ls ~/Server-Deployment/WebPy/_Current
-                            
-                            # Pull Docker images, if necessary
-                            docker images
-                            
-                            # Run Docker Compose
-                            cd ~/Server-Deployment/WebPy/_Current
-                            docker-compose up -d
-                        "
-                    '''
+                script {
+                    // Останавливаем и удаляем все контейнеры с именем проекта
+                    sh "docker-compose -p ${PROJECT_NAME} down --rmi all"
+                    
+                    // Дополнительно удаляем все dangling images (сиротские образы, не привязанные к контейнерам)
+                    sh "docker image prune -f"
                 }
             }
+        }
+
+        stage('Build and Deploy New Containers') {
+            steps {
+                script {
+                    // Сборка и запуск контейнеров с новым кодом
+                    sh "docker-compose -p ${PROJECT_NAME} up --build -d"
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Чистка лишних ресурсов после сборки, если необходимо
+            sh "docker system prune -f"
         }
     }
 }
