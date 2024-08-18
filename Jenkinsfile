@@ -4,7 +4,7 @@ pipeline {
     environment {
         GIT_CREDENTIALS_ID = 'GitHub-MobTestHW-ID'
         SSH_CREDENTIALS_ID = 'Server-Deploy-ID'
-        DEPLOY_SERVER = 'user@192.168.33.33'
+        DEPLOY_SERVER = 'user@192.168.43.22'
         PROJECT_NAME = 'WebPy'
         REMOTE_DIR = "~/Server-Deployment/${PROJECT_NAME}"
     }
