@@ -2,70 +2,83 @@ pipeline {
     agent any
     
     environment {
-        PROJECT_NAME = "WebPy"
+        GIT_CREDENTIALS_ID = 'GitHub-MobTestHW-ID'
+        SSH_CREDENTIALS_ID = 'Server-Deploy-ID'
+        DEPLOY_SERVER = 'user@192.168.33.33'
+        PROJECT_NAME = 'WebPy'
+        REMOTE_DIR = "~/Server-Deployment/${PROJECT_NAME}"
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
-                echo '*** Checkout ***'
-                git 'https://github.com/MobTesthw/WebPy.git'
+                // Clone the repository from GitHub using the provided credentials
+                git credentialsId: "${GIT_CREDENTIALS_ID}", url: 'https://github.com/MobTesthw/WebPy.git'
             }
         }
         
-        stage('Stop and Remove Old Containers and Images') {
+        stage('Stop and Remove Old Containers and Images on Server') {
             steps {
                 script {
-                    echo '*** Stop running containers related to the project ***'
-
-                    sshagent(['Server-Deploy-ID']) {
+                    sshagent([SSH_CREDENTIALS_ID]) {
                         sh '''
-                            ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
-                                docker-compose -p \"${PROJECT_NAME}\" down --rmi all
+                            ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
+                                echo '*** Stopping and removing old containers and images ***'
+                                cd ${REMOTE_DIR}
+                                docker-compose down --rmi all
                                 docker image prune -f
                             "
                         '''
-
-
                     }
-
-                    //sh "docker-compose -p \"${PROJECT_NAME}\" down --rmi all"
-                    //sh "docker image prune -f"
                 }
             }
         }
-
-        stage('Deliver src code to Deploy server') {
+        
+        stage('Deliver Source Code to Deploy Server') {
             steps {
                 script {
+                    sshagent([SSH_CREDENTIALS_ID]) {
+                        sh '''
+                            echo '*** Creating remote directory on server ***'
+                            ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "mkdir -p ${REMOTE_DIR}"
 
-                    sshagent(['Server-Deploy-ID']) {
-                        sh '''
-                            ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
-                                echo '*** Remove previous version and create folder for new code ***'
-                                rm -rf ~/Server-Deployment/WebPy/_Current
-                                mkdir -p ~/Server-Deployment/WebPy/_Current
-                            "
-                        '''
-                        sh '''
-                            echo '*** Copying files to deployment server ***'
-                            scp -r -o StrictHostKeyChecking=no * user@192.168.43.22:~/Server-Deployment/WebPy/_Current/
-                        '''
-                        sh '''
-                            ssh -o StrictHostKeyChecking=no user@192.168.43.22 "
-                                echo '*** Running docker-compose on deployment server ***'
-                                ls ~/Server-Deployment/WebPy/_Current
-                                cd ~/Server-Deployment/WebPy/_Current
-                                docker-compose up -d
-                            "
+                            echo '*** Copying project files to the deploy server ***'
+                            scp -r -o StrictHostKeyChecking=no * ${DEPLOY_SERVER}:${REMOTE_DIR}/
                         '''
                     }
                 }
             }
         }
 
-
+        stage('Deploy New Build on Server') {
+            steps {
+                script {
+                    sshagent([SSH_CREDENTIALS_ID]) {
+                        sh '''
+                            ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
+                                echo '*** Deploying the new build ***'
+                                cd ${REMOTE_DIR}
+                                docker-compose up --build -d
+                            "
+                        '''
+                    }
+                }
+            }
+        }
     }
     
-
+    post {
+        always {
+            script {
+                sshagent([SSH_CREDENTIALS_ID]) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} "
+                            echo '*** Cleaning up unused Docker resources ***'
+                            docker system prune -f
+                        "
+                    '''
+                }
+            }
+        }
+    }
 }
